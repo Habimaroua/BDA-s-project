@@ -133,22 +133,22 @@ export const dashboardStats: DashboardStats = {
 
 export const getRoleLabel = (role: string): string => {
   const labels: Record<string, string> = {
-    'vice-dean': 'Vice-Doyen',
+    'vice_doyen': 'Vice-Doyen',
     'admin': 'Administrateur',
-    'department-head': 'Chef de Département',
-    'student': 'Étudiant',
-    'professor': 'Professeur',
+    'chef_departement': 'Chef de Département',
+    'etudiant': 'Étudiant',
+    'professeur': 'Professeur',
   };
   return labels[role] || role;
 };
 
 export const getRoleDescription = (role: string): string => {
   const descriptions: Record<string, string> = {
-    'vice-dean': 'Vue stratégique globale et validation finale',
+    'vice_doyen': 'Vue stratégique globale et validation finale',
     'admin': 'Génération EDT et gestion des conflits',
-    'department-head': 'Validation et statistiques par département',
-    'student': 'Consultation du planning personnalisé',
-    'professor': 'Consultation du planning et surveillances',
+    'chef_departement': 'Validation et statistiques par département',
+    'etudiant': 'Consultation du planning personnalisé',
+    'professeur': 'Consultation du planning et surveillances',
   };
   return descriptions[role] || '';
 };

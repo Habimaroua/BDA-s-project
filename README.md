@@ -1,77 +1,58 @@
-<<<<<<< HEAD
-# Welcome to your Lovable project
+# UniSchedule
 
-## Project info
+UniSchedule est une plateforme moderne de gestion et de planification d'examens universitaires. Elle permet de gérer les départements, les formations, les modules, ainsi que les plannings d'examens et les surveillances, tout en détectant automatiquement les conflits.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Fonctionnalités Principales
 
-## How can I edit this code?
+- **Tableau de Bord Holistique** : Vue d'ensemble des statistiques clés (étudiants, examens, conflits).
+- **Gestion RBAC (Role-Based Access Control)** : Accès différencié pour les administrateurs, vice-doyens, chefs de département, professeurs et étudiants.
+- **Planification d'Examens** : Création et visualisation des calendriers d'examens.
+- **Détection de Conflits** : Identification automatique des chevauchements d'horaires pour les étudiants, professeurs et salles.
+- **Gestion des Ressources** : Administration des départements, modules et lieux d'examen.
 
-There are several ways of editing your application.
+## Technologies Utilisées
 
-**Use Lovable**
+- **Frontend** : React, TypeScript, Vite, tailwindcss, shadcn/ui, Lucide React.
+- **Backend & Auth** : Supabase.
+- **Gestion d'État** : TanStack Query (React Query).
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Installation Locale
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prérequis
 
-**Use your preferred IDE**
+- Node.js (v18+)
+- npm ou yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Étapes
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. **Cloner le projet**
+   ```sh
+   git clone <url-du-repo>
+   cd design-hub-pro-main
+   ```
 
-Follow these steps:
+2. **Installer les dépendances**
+   ```sh
+   npm install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. **Configurer les variables d'environnement**
+   Créez un fichier `.env` à la racine et ajoutez vos clés Supabase (si nécessaire, bien que le projet utilise déjà une configuration interne).
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. **Lancer le serveur de développement**
+   ```sh
+   npm run dev
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Structure du Projet
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- `src/components` : Composants UI réutilisables et composants de mise en page.
+- `src/pages` : Pages principales de l'application (Auth, Dashboard, etc.).
+- `src/hooks` : Hooks React personnalisés.
+- `src/types` : Définitions des types TypeScript.
+- `src/integrations` : Clients de services externes (Supabase).
+- `supabase/` : Scripts SQL pour la base de données (migrations, seeds).
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-=======
-# projet_BDA
->>>>>>> 28ccac7f99c08162ec8812406a1a1ed545122da7
+© 2025 UniSchedule - Tous droits réservés.

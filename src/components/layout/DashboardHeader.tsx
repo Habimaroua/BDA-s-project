@@ -11,11 +11,11 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ role }: DashboardHeaderProps) => {
   const getWelcomeMessage = () => {
     switch (role) {
-      case 'vice-dean':
+      case 'vice_doyen':
         return 'Vue Stratégique Globale';
       case 'admin':
         return 'Gestion des Plannings';
-      case 'department-head':
+      case 'chef_departement':
         return 'Tableau de Bord Département';
       default:
         return 'Mon Planning';
@@ -30,11 +30,11 @@ export const DashboardHeader = ({ role }: DashboardHeaderProps) => {
             {getWelcomeMessage()}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString('fr-FR', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            {new Date().toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })}
           </p>
         </div>
@@ -43,8 +43,8 @@ export const DashboardHeader = ({ role }: DashboardHeaderProps) => {
           {/* Search */}
           <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Rechercher..." 
+            <Input
+              placeholder="Rechercher..."
               className="pl-10 w-64 bg-secondary/50 border-transparent focus:border-accent"
             />
           </div>

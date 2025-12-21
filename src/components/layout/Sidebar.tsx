@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  AlertTriangle, 
-  Building2, 
+import { useAuth } from '@/components/AuthProvider';
+import {
+  LayoutDashboard,
+  Calendar,
+  AlertTriangle,
+  Building2,
   Users,
   Settings,
   LogOut,
@@ -20,7 +21,7 @@ interface SidebarProps {
 }
 
 const menuItems = {
-  'vice-dean': [
+  'vice_doyen': [
     { icon: LayoutDashboard, label: 'Vue Globale', path: '/dashboard' },
     { icon: Calendar, label: 'Emplois du Temps', path: '/schedule' },
     { icon: AlertTriangle, label: 'Conflits', path: '/conflicts' },
@@ -34,17 +35,17 @@ const menuItems = {
     { icon: Building2, label: 'Salles', path: '/rooms' },
     { icon: Users, label: 'Surveillances', path: '/supervision' },
   ],
-  'department-head': [
+  'chef_departement': [
     { icon: LayoutDashboard, label: 'Département', path: '/dashboard' },
     { icon: Calendar, label: 'Emplois du Temps', path: '/schedule' },
     { icon: AlertTriangle, label: 'Conflits', path: '/conflicts' },
     { icon: BookOpen, label: 'Formations', path: '/formations' },
   ],
-  'student': [
+  'etudiant': [
     { icon: LayoutDashboard, label: 'Mon Planning', path: '/dashboard' },
     { icon: Calendar, label: 'Mes Examens', path: '/my-exams' },
   ],
-  'professor': [
+  'professeur': [
     { icon: LayoutDashboard, label: 'Mon Planning', path: '/dashboard' },
     { icon: Calendar, label: 'Mes Examens', path: '/my-exams' },
     { icon: Users, label: 'Surveillances', path: '/my-supervision' },
@@ -53,7 +54,8 @@ const menuItems = {
 
 export const Sidebar = ({ role }: SidebarProps) => {
   const location = useLocation();
-  const items = menuItems[role] || menuItems['student'];
+  const { signOut } = useAuth();
+  const items = menuItems[role] || menuItems['etudiant'];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar text-sidebar-foreground flex flex-col z-50">
@@ -82,17 +84,17 @@ export const Sidebar = ({ role }: SidebarProps) => {
       <nav className="flex-1 px-4 py-2 overflow-y-auto">
         <ul className="space-y-1">
           {items.map((item) => {
-            const isActive = location.pathname === item.path || 
+            const isActive = location.pathname === item.path ||
               (item.path === '/dashboard' && location.pathname.includes('dashboard'));
-            
+
             return (
               <li key={item.path}>
                 <Link
-                  to={`${item.path}?role=${role}`}
+                  to={item.path}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
-                    isActive 
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
+                    isActive
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   )}
                 >
@@ -114,13 +116,13 @@ export const Sidebar = ({ role }: SidebarProps) => {
           <Settings className="w-5 h-5" />
           <span className="font-medium text-sm">Paramètres</span>
         </Link>
-        <Link
-          to="/"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-destructive transition-colors"
+        <button
+          onClick={signOut}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-destructive transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium text-sm">Déconnexion</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

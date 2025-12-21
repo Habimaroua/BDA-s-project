@@ -1,7 +1,7 @@
-import { 
-  Users, 
-  Calendar, 
-  AlertTriangle, 
+import {
+  Users,
+  Calendar,
+  AlertTriangle,
   Building2,
   TrendingUp,
   Clock
@@ -22,7 +22,7 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: Users,
       change: '+2.5%',
       changeType: 'positive' as const,
-      roles: ['vice-dean', 'admin'],
+      roles: ['vice_doyen', 'admin'],
     },
     {
       label: 'Examens Planifiés',
@@ -30,7 +30,7 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: Calendar,
       change: '+12',
       changeType: 'neutral' as const,
-      roles: ['vice-dean', 'admin', 'department-head'],
+      roles: ['vice_doyen', 'admin', 'chef_departement'],
     },
     {
       label: 'Conflits Détectés',
@@ -38,7 +38,7 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: AlertTriangle,
       change: '-5',
       changeType: 'positive' as const,
-      roles: ['vice-dean', 'admin', 'department-head'],
+      roles: ['vice_doyen', 'admin', 'chef_departement'],
     },
     {
       label: 'Taux d\'Occupation',
@@ -46,7 +46,7 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: Building2,
       change: '+3.2%',
       changeType: 'neutral' as const,
-      roles: ['vice-dean', 'admin'],
+      roles: ['vice_doyen', 'admin'],
     },
     {
       label: 'Examens / Jour',
@@ -54,7 +54,7 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: Clock,
       change: 'Moyenne',
       changeType: 'neutral' as const,
-      roles: ['vice-dean', 'admin'],
+      roles: ['vice_doyen', 'admin'],
     },
     {
       label: 'Départements',
@@ -62,12 +62,12 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
       icon: TrendingUp,
       change: 'Actifs',
       changeType: 'neutral' as const,
-      roles: ['vice-dean'],
+      roles: ['vice_doyen'],
     },
   ];
 
-  const filteredStats = stats.filter(stat => 
-    stat.roles.includes(role) || role === 'vice-dean'
+  const filteredStats = stats.filter(stat =>
+    stat.roles.includes(role) || role === 'vice_doyen'
   );
 
   const getChangeColor = (type: 'positive' | 'negative' | 'neutral') => {
@@ -84,8 +84,8 @@ export const StatsOverview = ({ role }: StatsOverviewProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {filteredStats.slice(0, 4).map((stat, index) => (
-        <Card 
-          key={stat.label} 
+        <Card
+          key={stat.label}
           className="overflow-hidden animate-scale-in shadow-card hover:shadow-card-hover transition-shadow"
           style={{ animationDelay: `${index * 0.1}s` }}
         >

@@ -91,7 +91,7 @@ export const ConflictsPanel = ({ role }: ConflictsPanelProps) => {
           );
         })}
 
-        {(role === 'admin' || role === 'vice-dean') && (
+        {(role === 'admin' || role === 'vice_doyen') && (
           <Button variant="ghost" className="w-full mt-4 group">
             Voir tous les conflits
             <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />

@@ -1,14 +1,17 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { UserRole } from '@/types';
 import { getRoleLabel } from '@/data/mockData';
+import { useAuth } from '@/components/AuthProvider';
 
 interface DashboardHeaderProps {
   role: UserRole;
 }
 
 export const DashboardHeader = ({ role }: DashboardHeaderProps) => {
+  const { user } = useAuth();
+
   const getWelcomeMessage = () => {
     switch (role) {
       case 'vice_doyen':
@@ -58,11 +61,11 @@ export const DashboardHeader = ({ role }: DashboardHeaderProps) => {
           {/* User Menu */}
           <div className="flex items-center gap-3 pl-4 border-l border-border">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-foreground">Utilisateur</p>
+              <p className="text-sm font-medium text-foreground">{user?.full_name || 'Utilisateur'}</p>
               <p className="text-xs text-muted-foreground">{getRoleLabel(role)}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-              <User className="w-5 h-5 text-accent" />
+              <UserIcon className="w-5 h-5 text-accent" />
             </div>
           </div>
         </div>

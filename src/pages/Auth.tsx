@@ -13,6 +13,12 @@ import heroBg from "@/assets/hero-bg.jpg";
 import { UserRole } from "@/types";
 import { api } from "@/lib/api";
 
+interface Department {
+    id: number;
+    name: string;
+    code: string;
+}
+
 const Auth = () => {
     const { user, login } = useAuth();
     const navigate = useNavigate();
@@ -21,6 +27,7 @@ const Auth = () => {
     const [isAuthenticating, setIsAuthenticating] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [departments, setDepartments] = useState<Department[]>([]);
 
     // Form states
     const [email, setEmail] = useState("");
@@ -28,6 +35,24 @@ const Auth = () => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [role, setRole] = useState<UserRole>("etudiant");
+    const [departmentId, setDepartmentId] = useState<string>("");
+    const [newDeptName, setNewDeptName] = useState("");
+    const [newDeptCode, setNewDeptCode] = useState("");
+
+    useEffect(() => {
+        // Fetch departments for signup
+        const fetchDepts = async () => {
+            try {
+                const data = await api.get('/departments');
+                if (Array.isArray(data)) {
+                    setDepartments(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch departments", err);
+            }
+        };
+        fetchDepts();
+    }, []);
 
     useEffect(() => {
         if (user && !isAuthenticating) {
@@ -60,6 +85,14 @@ const Auth = () => {
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const isGlobalRole = role === 'admin' || role === 'vice_doyen';
+
+        if (!departmentId && !isGlobalRole) {
+            setErrorMessage("Veuillez sélectionner un département.");
+            return;
+        }
+
         setLoading(true);
         setErrorMessage("");
         setSuccessMessage("");
@@ -70,7 +103,10 @@ const Auth = () => {
                 email,
                 password,
                 full_name: fullName,
-                role
+                role,
+                department_id: departmentId === 'other' ? null : parseInt(departmentId),
+                new_department_name: departmentId === 'other' ? newDeptName : null,
+                new_department_code: departmentId === 'other' ? newDeptCode : null
             });
 
             if (data.error) throw new Error(data.error);
@@ -150,19 +186,59 @@ const Auth = () => {
                                     <div className="space-y-2"><Label htmlFor="firstname">Prénom</Label><Input id="firstname" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jean" required /></div>
                                     <div className="space-y-2"><Label htmlFor="lastname">Nom</Label><Input id="lastname" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dupont" required /></div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="role">Rôle</Label>
-                                    <Select onValueChange={(value) => setRole(value as UserRole)} defaultValue={role}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="etudiant">Étudiant</SelectItem>
-                                            <SelectItem value="professeur">Professeur</SelectItem>
-                                            <SelectItem value="chef_departement">Chef de Département</SelectItem>
-                                            <SelectItem value="vice_doyen">Vice-Doyen</SelectItem>
-                                            <SelectItem value="admin">Administrateur</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="role">Rôle</Label>
+                                        <Select onValueChange={(value) => setRole(value as UserRole)} defaultValue={role}>
+                                            <SelectTrigger><SelectValue placeholder="Rôle" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="etudiant">Étudiant</SelectItem>
+                                                <SelectItem value="professeur">Professeur</SelectItem>
+                                                <SelectItem value="chef_departement">Chef de Département</SelectItem>
+                                                <SelectItem value="vice_doyen">Vice-Doyen</SelectItem>
+                                                <SelectItem value="admin">Administrateur</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="department">Département</Label>
+                                        <Select
+                                            onValueChange={(value) => setDepartmentId(value)}
+                                            value={departmentId}
+                                            disabled={role === 'admin' || role === 'vice_doyen'}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={role === 'admin' || role === 'vice_doyen' ? "Accès Global (Tous)" : "Choisir..."} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {departments.map((dept) => (
+                                                    <SelectItem key={dept.id} value={dept.id.toString()}>
+                                                        {dept.name} ({dept.code})
+                                                    </SelectItem>
+                                                ))}
+                                                <SelectItem value="other" className="font-bold text-accent">+ Autre département...</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {(role === 'admin' || role === 'vice_doyen') && (
+                                            <p className="text-[10px] text-accent font-medium mt-1">Accès à l'ensemble de la faculté.</p>
+                                        )}
+                                    </div>
                                 </div>
+
+                                {departmentId === 'other' && (
+                                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="new-dept-name">Nom du département</Label>
+                                            <Input id="new-dept-name" value={newDeptName} onChange={(e) => setNewDeptName(e.target.value)} placeholder="Génie Mécanique" required />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="new-dept-code">Code (ex: GM)</Label>
+                                            <Input id="new-dept-code" value={newDeptCode} onChange={(e) => setNewDeptCode(e.target.value)} placeholder="GM" required />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="space-y-2"><Label htmlFor="email-signup">Email</Label><Input id="email-signup" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" required /></div>
                                 <div className="space-y-2"><Label htmlFor="password-signup">Mot de passe</Label><Input id="password-signup" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
                                 <Button type="submit" className="w-full" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Créer mon compte</Button>
@@ -174,6 +250,5 @@ const Auth = () => {
         </div>
     );
 };
-
 
 export default Auth;

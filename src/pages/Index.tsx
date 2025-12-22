@@ -1,25 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  GraduationCap,
-  UserCog,
   Building2,
   Users,
   Calendar,
   Shield,
   Zap,
-  ArrowRight,
-  BookOpen
+  ArrowRight
 } from 'lucide-react';
 import heroBg from '@/assets/hero-bg.jpg';
 
-
-
-
 const Index = () => {
   const navigate = useNavigate();
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +59,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Role Selection Section - REPLACED WITH DIRECT ACCESS */}
+      {/* Access Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -81,7 +73,7 @@ const Index = () => {
             <Button
               variant="hero"
               size="xl"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/auth')}
               className="group"
             >
               Se connecter

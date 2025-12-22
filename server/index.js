@@ -95,6 +95,13 @@ const initDB = async () => {
             )
         `);
 
+        // Initialisation des départements par défaut si vide
+        const [rows] = await db.execute('SELECT COUNT(*) as count FROM departments');
+        if (rows[0].count === 0) {
+            console.log("Insertion des départements par défaut...");
+            await db.execute("INSERT INTO departments (name, code) VALUES ('Informatique', 'INFO'), ('Mathématiques', 'MATH'), ('Génie Civil', 'GC'), ('Économie', 'ECO')");
+        }
+
         console.log("Base de données opérationnelle.");
     } catch (error) {
         console.error("Erreur lors de l'initialisation de la BDD:", error);
@@ -108,18 +115,27 @@ initDB();
 // Inscription
 app.post('/api/auth/signup', async (req, res) => {
     try {
-        const { email, password, full_name, role } = req.body;
+        let { email, password, full_name, role, department_id, new_department_name, new_department_code } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Si l'utilisateur a saisi un nouveau département
+        if (new_department_name && new_department_code) {
+            const [deptResult] = await db.execute(
+                'INSERT INTO departments (name, code) VALUES (?, ?)',
+                [new_department_name, new_department_code.toUpperCase()]
+            );
+            department_id = deptResult.insertId;
+        }
+
         const [result] = await db.execute(
-            'INSERT INTO users (email, password, full_name, role) VALUES (?, ?, ?, ?)',
-            [email, hashedPassword, full_name, role]
+            'INSERT INTO users (email, password, full_name, role, department_id) VALUES (?, ?, ?, ?, ?)',
+            [email, hashedPassword, full_name, role, department_id]
         );
 
         res.status(201).json({ message: "Utilisateur créé !", userId: result.insertId });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Email déjà utilisé ou erreur serveur." });
+        res.status(500).json({ error: "Email déjà utilisé ou erreur lors de la création du département." });
     }
 });
 
@@ -136,7 +152,7 @@ app.post('/api/auth/login', async (req, res) => {
         if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect." });
 
         const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
-        res.json({ token, user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role } });
+        res.json({ token, user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role, department_id: user.department_id } });
     } catch (error) {
         res.status(500).json({ error: "Erreur serveur lors de la connexion." });
     }
@@ -148,6 +164,18 @@ app.get('/api/exams', async (req, res) => {
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: "Impossible de récupérer les examens." });
+    }
+});
+
+// Récupérer les départements
+app.get('/api/departments', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM departments ORDER BY name ASC');
+        console.log(`${rows.length} départements envoyés au client.`);
+        res.json(rows);
+    } catch (error) {
+        console.error("Erreur récup départements:", error);
+        res.status(500).json({ error: "Impossible de récupérer les départements." });
     }
 });
 

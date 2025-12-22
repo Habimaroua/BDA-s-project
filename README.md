@@ -1,58 +1,44 @@
-# UniSchedule
+# UniSchedule - Plateforme de Planification d'Examens
 
-UniSchedule est une plateforme moderne de gestion et de planification d'examens universitaires. Elle permet de gérer les départements, les formations, les modules, ainsi que les plannings d'examens et les surveillances, tout en détectant automatiquement les conflits.
+UniSchedule est une solution robuste et élégante pour la gestion des calendriers d'examens universitaires. Elle intègre des contraintes académiques complexes pour garantir une organisation équitable et sans conflits.
 
-## Fonctionnalités Principales
+## 🚀 Architecture Technique
 
-- **Tableau de Bord Holistique** : Vue d'ensemble des statistiques clés (étudiants, examens, conflits).
-- **Gestion RBAC (Role-Based Access Control)** : Accès différencié pour les administrateurs, vice-doyens, chefs de département, professeurs et étudiants.
-- **Planification d'Examens** : Création et visualisation des calendriers d'examens.
-- **Détection de Conflits** : Identification automatique des chevauchements d'horaires pour les étudiants, professeurs et salles.
-- **Gestion des Ressources** : Administration des départements, modules et lieux d'examen.
+- **Frontend** : React + Vite + Tailwind CSS (Design Premium & Responsive)
+- **Backend** : Node.js + Express (API REST sécurisée)
+- **Base de Données** : MySQL (Relationnel, structuré pour la performance)
+- **Authentification** : JWT (JSON Web Tokens) avec hachage de mots de passe (Bcrypt)
 
-## Technologies Utilisées
+## ⚖️ Respect des Contraintes Académiques
 
-- **Frontend** : React, TypeScript, Vite, tailwindcss, shadcn/ui, Lucide React.
-- **Backend & Auth** : Supabase.
-- **Gestion d'État** : TanStack Query (React Query).
+Le système modélise et surveille automatiquement les règles suivantes :
+- **Étudiants** : Garantie de maximum **1 examen par jour**.
+- **Professeurs** : Charge de travail limitée à **3 examens/jour**.
+- **Capacité** : Vérification stricte de la capacité des salles et amphis par rapport au nombre d'étudiants inscrits.
+- **Priorités** : Affectation prioritaire des enseignants pour la surveillance des examens de leur propre département.
+- **Équité** : Algorithme de répartition pour assurer un nombre égal de surveillances entre tous les enseignants.
 
-## Installation Locale
+## 📂 Structure du Projet
 
-### Prérequis
+- `/src` : Application React (Frontend)
+- `/server` : Backend Node.js & Scripts SQL
+  - `schema.sql` : Création de la BD et Dataset réaliste.
+  - `dashboard_queries.sql` : Requêtes d'analyse des contraintes critiques.
+- `/public` : Assets statiques
 
-- Node.js (v18+)
-- npm ou yarn
+## 🛠️ Installation & Déploiement
 
-### Étapes
+### Local
+1. Cloner le dépôt.
+2. Importer `server/schema.sql` dans votre serveur MySQL local.
+3. Dash `npm install` dans la racine et dans `/server`.
+4. Configurer le `.env` dans `/server`.
+5. Lancer le backend (`node index.js`) et le frontend (`npm run dev`).
 
-1. **Cloner le projet**
-   ```sh
-   git clone <url-du-repo>
-   cd design-hub-pro-main
-   ```
-
-2. **Installer les dépendances**
-   ```sh
-   npm install
-   ```
-
-3. **Configurer les variables d'environnement**
-   Créez un fichier `.env` à la racine et ajoutez vos clés Supabase (si nécessaire, bien que le projet utilise déjà une configuration interne).
-
-4. **Lancer le serveur de développement**
-   ```sh
-   npm run dev
-   ```
-
-## Structure du Projet
-
-- `src/components` : Composants UI réutilisables et composants de mise en page.
-- `src/pages` : Pages principales de l'application (Auth, Dashboard, etc.).
-- `src/hooks` : Hooks React personnalisés.
-- `src/types` : Définitions des types TypeScript.
-- `src/integrations` : Clients de services externes (Supabase).
-- `supabase/` : Scripts SQL pour la base de données (migrations, seeds).
+### Déploiement en ligne
+1. **Base de Données** : Héberger MySQL sur **Railway.app** ou **Aiven**.
+2. **Backend** : Déployer le dossier `/server` sur **Render.com**.
+3. **Frontend** : Déployer sur **Vercel** ou **Netlify**.
 
 ---
-
-© 2025 UniSchedule - Tous droits réservés.
+© 2025 UniSchedule. Excellence Opérationnelle Académique.

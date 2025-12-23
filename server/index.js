@@ -470,6 +470,47 @@ app.post('/api/schedule/generate', authenticateToken, async (req, res) => {
                 message: `Génération réussie : ${result.scheduled} examens planifiés.`,
                 details: result
             });
+
+            // CRÉER LES NOTIFICATIONS
+            try {
+                const title = "Nouvel Emploi de Temps";
+                const message = `Un nouvel emploi de temps a été généré pour votre ${formationId ? 'filière' : 'département'}.`;
+
+                // On récupère tous les emails concernés
+                let userQuery = "";
+                const userParams = [];
+
+                if (formationId) {
+                    userQuery = "SELECT email FROM etudiants WHERE formation_id = ?";
+                    userParams.push(formationId);
+                } else if (deptId) {
+                    userQuery = "SELECT email FROM etudiants e JOIN formations f ON e.formation_id = f.id WHERE f.dept_id = ?";
+                    userParams.push(deptId);
+                }
+
+                if (userQuery) {
+                    const [usersToNotify] = await db.execute(userQuery, userParams);
+                    for (const u of usersToNotify) {
+                        await db.execute(
+                            'INSERT INTO notifications (user_email, title, message, type) VALUES (?, ?, ?, ?)',
+                            [u.email, title, message, 'info']
+                        );
+                    }
+                }
+
+                // Notifier aussi les professeurs du département
+                if (deptId) {
+                    const [profs] = await db.execute('SELECT email FROM professeurs WHERE dept_id = ?', [deptId]);
+                    for (const p of profs) {
+                        await db.execute(
+                            'INSERT INTO notifications (user_email, title, message, type) VALUES (?, ?, ?, ?)',
+                            [p.email, title, "Un nouveau planning d'examens a été généré pour votre département.", 'info']
+                        );
+                    }
+                }
+            } catch (notifErr) {
+                console.error("Failed to create notifications:", notifErr);
+            }
         } else {
             res.status(500).json({ error: result.error || "Erreur lors de la génération" });
         }
@@ -482,10 +523,58 @@ app.post('/api/schedule/generate', authenticateToken, async (req, res) => {
 // NOTIFICATIONS
 app.get('/api/notifications', authenticateToken, async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT * FROM notifications WHERE user_email = ? ORDER BY created_at DESC', [req.user.email]);
+        const [rows] = await db.execute('SELECT * FROM notifications WHERE user_email = ? ORDER BY created_at DESC LIMIT 20', [req.user.email]);
         res.json(rows);
     } catch (e) {
         res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/notifications/mark-read', authenticateToken, async (req, res) => {
+    try {
+        const { notificationId } = req.body;
+        await db.execute('UPDATE notifications SET is_read = TRUE WHERE id = ? AND user_email = ?', [notificationId, req.user.email]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// PROFILE UPDATE
+app.put('/api/profile/update', authenticateToken, async (req, res) => {
+    try {
+        const { full_name, email, password } = req.body;
+        const [firstName, ...lastNameParts] = full_name.split(' ');
+        const lastName = lastNameParts.join(' ') || '';
+
+        // On cherche dans quelle table se trouve l'utilisateur
+        let table = 'admins';
+        if (req.user.role === 'professeur' || req.user.role === 'chef_departement') table = 'professeurs';
+        if (req.user.role === 'etudiant') table = 'etudiants';
+
+        let query = `UPDATE ${table} SET email = ?, nom = ?`;
+        const params = [email, table === 'etudiants' ? lastName : full_name];
+
+        if (table === 'etudiants') {
+            query += ", prenom = ?";
+            params.push(firstName);
+        }
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query += ", password = ?";
+            params.push(hashedPassword);
+        }
+
+        query += " WHERE id = ?";
+        params.push(req.user.id);
+
+        await db.execute(query, params);
+
+        res.json({ message: "Profil mis à jour avec succès. Veuillez vous reconnecter si vous avez changé d'email." });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Erreur mise à jour profil" });
     }
 });
 

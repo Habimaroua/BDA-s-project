@@ -30,5 +30,29 @@ export const api = {
         const data = await response.json();
         console.log(`📥 Données JSON:`, data);
         return data;
+    },
+
+    async put(endpoint: string, data: any) {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data),
+        });
+        return response.json();
+    },
+
+    async delete(endpoint: string) {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        return response.json();
     }
 };

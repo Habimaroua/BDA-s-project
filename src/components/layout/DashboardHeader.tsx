@@ -16,6 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SettingsDialog } from '../dashboard/SettingsDialog';
+import { Moon, Sun, Settings as SettingsIcon, LogOut } from 'lucide-react';
 
 interface DashboardHeaderProps {
   role: UserRole;
@@ -23,10 +25,34 @@ interface DashboardHeaderProps {
 }
 
 export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
+
+  const toggleDarkMode = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  useEffect(() => {
+    // Sync theme on mount
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      document.documentElement.classList.add('dark');
+      setIsDark(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -147,18 +173,46 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Theme Toggle */}
+          <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="text-muted-foreground hover:text-accent">
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
+
           {/* User Menu */}
-          <div className="flex items-center gap-3 pl-4 border-l border-border">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-foreground">{user?.full_name || 'Utilisateur'}</p>
-              <p className="text-xs text-muted-foreground">{getRoleLabel(role)}</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center border-2 border-accent/20">
-              <UserIcon className="w-5 h-5 text-accent" />
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-3 pl-4 border-l border-border cursor-pointer group hover:opacity-80 transition-opacity">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">{user?.full_name || 'Utilisateur'}</p>
+                  <p className="text-xs text-muted-foreground">{getRoleLabel(role)}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center border-2 border-accent/20 group-hover:border-accent group-hover:bg-accent/20 transition-all">
+                  <UserIcon className="w-5 h-5 text-accent" />
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowSettings(true)} className="cursor-pointer">
+                <SettingsIcon className="mr-2 h-4 w-4" />
+                <span>Paramètres</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                <Badge variant="outline" className="mr-2 h-4 w-4 p-0 flex items-center justify-center">E</Badge>
+                <span>Mon Espace</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      <SettingsDialog open={showSettings} onOpenChange={setShowSettings} />
     </header>
   );
 };

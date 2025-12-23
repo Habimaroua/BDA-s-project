@@ -36,6 +36,8 @@ const Auth = () => {
     const [lastName, setLastName] = useState("");
     const [role, setRole] = useState<UserRole>("etudiant");
     const [departmentId, setDepartmentId] = useState<string>("");
+    const [formations, setFormations] = useState<any[]>([]);
+    const [formationId, setFormationId] = useState<string>("");
     const [newDeptName, setNewDeptName] = useState("");
     const [newDeptCode, setNewDeptCode] = useState("");
 
@@ -53,6 +55,23 @@ const Auth = () => {
         };
         fetchDepts();
     }, []);
+
+    useEffect(() => {
+        if (departmentId && departmentId !== 'other' && role === 'etudiant') {
+            const fetchFormations = async () => {
+                try {
+                    const data = await api.get(`/public/formations?deptId=${departmentId}`);
+                    setFormations(data);
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+            fetchFormations();
+        } else {
+            setFormations([]);
+            setFormationId("");
+        }
+    }, [departmentId, role]);
 
     useEffect(() => {
         if (user && !isAuthenticating) {
@@ -105,6 +124,7 @@ const Auth = () => {
                 full_name: fullName,
                 role,
                 department_id: departmentId === 'other' ? null : parseInt(departmentId),
+                formation_id: formationId ? parseInt(formationId) : null,
                 new_department_name: departmentId === 'other' ? newDeptName : null,
                 new_department_code: departmentId === 'other' ? newDeptCode : null
             });
@@ -225,6 +245,27 @@ const Auth = () => {
                                         )}
                                     </div>
                                 </div>
+
+                                {role === 'etudiant' && departmentId && departmentId !== 'other' && (
+                                    <div className="space-y-2 animate-in slide-in-from-top-2">
+                                        <Label htmlFor="formation">Filière / Formation</Label>
+                                        <Select
+                                            onValueChange={(value) => setFormationId(value)}
+                                            value={formationId}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Choisir votre filière..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {formations.map((f) => (
+                                                    <SelectItem key={f.id} value={f.id.toString()}>
+                                                        {f.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
 
                                 {departmentId === 'other' && (
                                     <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2">

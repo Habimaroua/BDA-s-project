@@ -25,10 +25,44 @@ async function generateTimetable(filters = {}) {
     });
 
     try {
+        // 0. Auto-création des examens pour les modules qui n'en ont pas
+        let missingExamsQuery = `
+            SELECT m.id, m.formation_id, f.dept_id
+            FROM modules m
+            JOIN formations f ON m.formation_id = f.id
+            LEFT JOIN examens e ON e.module_id = m.id
+            WHERE e.id IS NULL
+        `;
+        let missingParams = [];
+        if (formationId) {
+            missingExamsQuery += " AND m.formation_id = ?";
+            missingParams.push(formationId);
+        } else if (deptId) {
+            missingExamsQuery += " AND f.dept_id = ?";
+            missingParams.push(deptId);
+        }
+
+        const [missing] = await connection.execute(missingExamsQuery, missingParams);
+        if (missing.length > 0) {
+            console.log(`🆕 Création de ${missing.length} entrées d'examens manquantes...`);
+            for (const m of missing) {
+                // On cherche le premier prof du département pour l'assigner
+                const [profs] = await connection.execute('SELECT id FROM professeurs WHERE dept_id = ? LIMIT 1', [m.dept_id]);
+                const profId = profs.length > 0 ? profs[0].id : null;
+
+                if (profId) {
+                    await connection.execute(
+                        'INSERT INTO examens (module_id, prof_id, duree_minutes, is_validated) VALUES (?, ?, ?, FALSE)',
+                        [m.id, profId, 120] // 2h par défaut
+                    );
+                }
+            }
+        }
+
         // 1. Récupérer les examens à planifier
         // On ne planifie que ce qui n'est pas déjà validé
         let query = `
-            SELECT e.*, m.nom as module_name, f.dept_id, f.nom as formation_name
+            SELECT e.*, m.nom as module_name, m.formation_id, f.dept_id, f.nom as formation_name
             FROM examens e
             JOIN modules m ON e.module_id = m.id
             JOIN formations f ON m.formation_id = f.id
@@ -44,6 +78,7 @@ async function generateTimetable(filters = {}) {
             params.push(deptId);
         }
 
+        // On relance la requête pour inclure ceux qu'on vient de créer
         const [examsToPlan] = await connection.execute(query, params);
 
         if (examsToPlan.length === 0) {
@@ -61,7 +96,7 @@ async function generateTimetable(filters = {}) {
         // 3. Récupérer les examens DÉJÀ planifiés et validés (pour éviter les conflits)
         const [existingExams] = await connection.execute('SELECT * FROM examens WHERE is_validated = TRUE AND date_heure IS NOT NULL');
 
-        console.log(`📊 Période: ${PERIOD_START.toISOString()} -> ${PERIOD_END.toISOString()}`);
+        console.log(`📊 Période: ${PERIOD_START.toLocaleString()}`);
         console.log(`📊 ${examsToPlan.length} examens à planifier.`);
         console.log(`🏠 ${rooms.length} salles disponibles.`);
 
@@ -96,6 +131,19 @@ async function generateTimetable(filters = {}) {
             return true;
         };
 
+        const isTooCloseToOtherExam = (occupancyList, date, minGapDays = 1) => {
+            if (!occupancyList || occupancyList.length === 0) return false;
+            const current = new Date(date);
+            current.setHours(0, 0, 0, 0);
+
+            return occupancyList.some(slot => {
+                const other = new Date(slot.start);
+                other.setHours(0, 0, 0, 0);
+                const diff = Math.abs(current.getTime() - other.getTime()) / (1000 * 3600 * 24);
+                return diff <= minGapDays; // Si diff est 0 (même jour) ou 1 (jour suivant), c'est trop proche
+            });
+        };
+
         let scheduledCount = 0;
         let conflicts = [];
 
@@ -123,8 +171,23 @@ async function generateTimetable(filters = {}) {
                     continue;
                 }
 
+                // CONTRAINTE : Pas d'examen le Vendredi (journée libre)
+                if (attemptDate.getDay() === 5) {
+                    attemptDate.setDate(attemptDate.getDate() + 1);
+                    attemptDate.setHours(DAILY_START_HOUR, 0, 0, 0);
+                    continue;
+                }
+
+                // CONTRAINTE : Au moins 1 jour de repos entre les examens d'une même formation
+                if (isTooCloseToOtherExam(formationOccupancy[exam.formation_id], attemptDate, 1)) {
+                    // Sauter à demain 8h pour retenter
+                    attemptDate.setDate(attemptDate.getDate() + 1);
+                    attemptDate.setHours(DAILY_START_HOUR, 0, 0, 0);
+                    continue;
+                }
+
                 // Vérifier collision formation
-                if (isTimeSlotFree(formationOccupancy[exam.module_id], attemptDate, slotEnd)) {
+                if (isTimeSlotFree(formationOccupancy[exam.formation_id], attemptDate, slotEnd)) {
                     // Vérifier collision prof
                     if (isTimeSlotFree(profOccupancy[exam.prof_id], attemptDate, slotEnd)) {
 
@@ -138,10 +201,11 @@ async function generateTimetable(filters = {}) {
                                 );
 
                                 // Update Trackers
+                                if (!roomOccupancy[room.id]) roomOccupancy[room.id] = [];
                                 roomOccupancy[room.id].push({ start: new Date(attemptDate), end: new Date(slotEnd) });
 
-                                if (!formationOccupancy[exam.module_id]) formationOccupancy[exam.module_id] = [];
-                                formationOccupancy[exam.module_id].push({ start: new Date(attemptDate), end: new Date(slotEnd) });
+                                if (!formationOccupancy[exam.formation_id]) formationOccupancy[exam.formation_id] = [];
+                                formationOccupancy[exam.formation_id].push({ start: new Date(attemptDate), end: new Date(slotEnd) });
 
                                 if (!profOccupancy[exam.prof_id]) profOccupancy[exam.prof_id] = [];
                                 profOccupancy[exam.prof_id].push({ start: new Date(attemptDate), end: new Date(slotEnd) });

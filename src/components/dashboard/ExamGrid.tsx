@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { MapPin } from "lucide-react";
+import { MapPin, BookOpen } from "lucide-react";
 
 interface ExamGridProps {
     exams: any[];
@@ -27,7 +27,14 @@ export const ExamGrid = ({ exams }: ExamGridProps) => {
                 // 2. Group these exams by date and time (session)
                 const sessions: { [key: string]: any[] } = {};
                 formationExams.forEach(exam => {
-                    const key = `${exam.date_time}`;
+                    const dateValue = exam.date_heure || exam.date_time || exam.dateTime;
+                    if (!dateValue) return;
+
+                    const cleanDate = typeof dateValue === 'string' && dateValue.includes(' ') ? dateValue.replace(' ', 'T') : dateValue;
+                    const d = new Date(cleanDate);
+                    if (isNaN(d.getTime())) return;
+
+                    const key = d.toISOString();
                     if (!sessions[key]) sessions[key] = [];
                     sessions[key].push(exam);
                 });
@@ -54,31 +61,60 @@ export const ExamGrid = ({ exams }: ExamGridProps) => {
                                                 <div className="flex flex-col items-center gap-1">
                                                     <span className="text-muted-foreground font-medium">{new Date(key).toLocaleDateString('fr-FR', { weekday: 'long' })}</span>
                                                     <span className="text-sm">{new Date(key).toLocaleDateString('fr-FR')}</span>
-                                                    <Badge className="bg-primary/10 text-primary hover:bg-primary/15 border-none mt-1">
-                                                        {new Date(key).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                                    </Badge>
+                                                    <div className="flex items-center gap-1.5 mt-2 bg-muted/30 p-1.5 rounded-lg border border-border/50">
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-1">Début</span>
+                                                            <Badge className="bg-primary/10 text-primary border-none text-[11px] font-bold px-2 py-0.5">
+                                                                {new Date(key).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="h-4 w-px bg-border self-end mb-1" />
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[9px] uppercase font-bold text-muted-foreground leading-none mb-1">Fin</span>
+                                                            <Badge className="bg-amber-100 text-amber-700 border-none text-[11px] font-bold px-2 py-0.5">
+                                                                {(() => {
+                                                                    const start = new Date(key);
+                                                                    const firstExam = sessions[key][0];
+                                                                    const duration = (firstExam.duree_minutes || firstExam.duration || 90);
+                                                                    return new Date(start.getTime() + duration * 60 * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                                                                })()}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr className="bg-secondary/10">
-                                        <td className="p-4 border border-border font-bold text-[10px] uppercase text-muted-foreground bg-secondary/20">Matière</td>
+                                    <tr className="group hover:bg-muted/30 transition-colors">
+                                        <td className="p-4 border border-border font-bold text-[10px] uppercase text-muted-foreground bg-muted/50 w-32">
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen className="w-3 h-3 text-primary" />
+                                                Matière
+                                            </div>
+                                        </td>
                                         {sortedSessionKeys.map((key, i) => (
-                                            <td key={i} className="p-4 border border-border text-center font-bold text-sm text-foreground">
-                                                {sessions[key][0].module_name}
+                                            <td key={i} className="p-4 border border-border text-center">
+                                                <div className="font-bold text-sm text-primary bg-primary/5 py-2 px-3 rounded-lg border border-primary/10 inline-block min-w-[120px]">
+                                                    {sessions[key][0].module_name}
+                                                </div>
                                             </td>
                                         ))}
                                     </tr>
-                                    <tr>
-                                        <td className="p-4 border border-border font-bold text-[10px] uppercase text-muted-foreground bg-secondary/5">Salles</td>
+                                    <tr className="group hover:bg-muted/30 transition-colors">
+                                        <td className="p-4 border border-border font-bold text-[10px] uppercase text-muted-foreground bg-muted/30 w-32">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="w-3 h-3 text-secondary" />
+                                                Salles
+                                            </div>
+                                        </td>
                                         {sortedSessionKeys.map((key, i) => (
                                             <td key={i} className="p-4 border border-border text-center">
-                                                <div className="flex flex-col gap-2">
+                                                <div className="flex flex-col gap-2 items-center">
                                                     {sessions[key].map((ex: any, idx: number) => (
-                                                        <Badge key={idx} variant="outline" className="justify-center py-1.5 bg-accent/5 text-accent border-accent/20 font-medium">
-                                                            <MapPin className="w-3 h-3 mr-1.5" />
+                                                        <Badge key={idx} variant="outline" className="justify-center py-1.5 px-3 bg-teal-50 text-teal-700 border-teal-200 font-medium shadow-sm hover:bg-teal-100 transition-all">
+                                                            <MapPin className="w-3.5 h-3.5 mr-1.5 text-teal-600" />
                                                             {ex.room_name || 'TBD'}
                                                         </Badge>
                                                     ))}

@@ -22,7 +22,7 @@ export const FormationsList = () => {
     // État pour l'ajout de module
     const [showAddModuleDialog, setShowAddModuleDialog] = useState(false);
     const [currentFormationId, setCurrentFormationId] = useState<number | null>(null);
-    const [newModuleData, setNewModuleData] = useState({ nom: '', credits: 3, pre_req_id: 'none' });
+    const [newModuleData, setNewModuleData] = useState({ nom: '', credits: 3, duration: 120, pre_req_id: 'none' });
     const [addingModule, setAddingModule] = useState(false);
 
     useEffect(() => {
@@ -103,7 +103,7 @@ export const FormationsList = () => {
 
     const handleOpenAddModule = (formationId: number) => {
         setCurrentFormationId(formationId);
-        setNewModuleData({ nom: '', credits: 3, pre_req_id: 'none' });
+        setNewModuleData({ nom: '', credits: 3, duration: 120, pre_req_id: 'none' });
         setShowAddModuleDialog(true);
     };
 
@@ -120,6 +120,7 @@ export const FormationsList = () => {
                 nom: newModuleData.nom.trim(),
                 credits: newModuleData.credits,
                 formation_id: currentFormationId,
+                duration: newModuleData.duration,
                 pre_req_id: newModuleData.pre_req_id === 'none' ? null : Number(newModuleData.pre_req_id)
             });
             toast.success("Module ajouté avec succès !");
@@ -249,16 +250,29 @@ export const FormationsList = () => {
                                         autoFocus
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="module-credits">Crédits</Label>
-                                    <Input
-                                        id="module-credits"
-                                        type="number"
-                                        min="1"
-                                        max="10"
-                                        value={newModuleData.credits}
-                                        onChange={(e) => setNewModuleData({ ...newModuleData, credits: parseInt(e.target.value) || 1 })}
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="module-credits">Crédits</Label>
+                                        <Input
+                                            id="module-credits"
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            value={newModuleData.credits}
+                                            onChange={(e) => setNewModuleData({ ...newModuleData, credits: parseInt(e.target.value) || 1 })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="module-duration">Durée (min)</Label>
+                                        <Input
+                                            id="module-duration"
+                                            type="number"
+                                            min="30"
+                                            step="30"
+                                            value={newModuleData.duration || 120}
+                                            onChange={(e) => setNewModuleData({ ...newModuleData, duration: parseInt(e.target.value) || 120 })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Pré-requis (Optionnel)</Label>

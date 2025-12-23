@@ -101,12 +101,18 @@ export const ExamSchedule = ({ role, title = "Emploi du Temps", viewType = 'exam
   }, [viewType, role, title]);
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return "Date non définie";
+    if (!dateStr) return "N/A";
     try {
-      return new Date(dateStr).toLocaleDateString('fr-FR', {
+      // Nettoyer la date au cas où (format MySQL vers ISO)
+      const cleanDate = dateStr.includes(' ') ? dateStr.replace(' ', 'T') : dateStr;
+      const d = new Date(cleanDate);
+      if (isNaN(d.getTime())) return "Format date invalide";
+
+      return d.toLocaleDateString('fr-FR', {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
+        year: 'numeric'
       });
     } catch (e) {
       return "Date invalide";
@@ -116,7 +122,11 @@ export const ExamSchedule = ({ role, title = "Emploi du Temps", viewType = 'exam
   const formatTime = (dateStr: string) => {
     if (!dateStr) return "--:--";
     try {
-      return new Date(dateStr).toLocaleTimeString('fr-FR', {
+      const cleanDate = dateStr.includes(' ') ? dateStr.replace(' ', 'T') : dateStr;
+      const d = new Date(cleanDate);
+      if (isNaN(d.getTime())) return "--:--";
+
+      return d.toLocaleTimeString('fr-FR', {
         hour: '2-digit',
         minute: '2-digit',
       });

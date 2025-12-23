@@ -36,11 +36,27 @@ app.get('/api/departments', async (req, res) => {
     }
 });
 
+app.get('/api/public/formations', async (req, res) => {
+    try {
+        const { deptId } = req.query;
+        let query = 'SELECT id, nom as name FROM formations';
+        const params = [];
+        if (deptId) {
+            query += ' WHERE dept_id = ?';
+            params.push(deptId);
+        }
+        const [rows] = await db.execute(query, params);
+        res.json(rows);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
 // SIGNUP
 app.post('/api/auth/signup', async (req, res) => {
     try {
-        const { email, password, full_name, role, department_id, new_department_name } = req.body;
-        console.log(`[Signup] Attempt for ${email} as ${role}`);
+        const { email, password, full_name, role, department_id, formation_id, new_department_name } = req.body;
+        console.log(`[Signup] Attempt for ${email} as ${role} (Formation: ${formation_id})`);
 
         // Check if email exists
         const [existingAdmins] = await db.execute('SELECT id FROM admins WHERE email = ?', [email]);
@@ -78,8 +94,8 @@ app.post('/api/auth/signup', async (req, res) => {
         }
         else {
             await db.execute(
-                'INSERT INTO etudiants (nom, prenom, email, password, promo) VALUES (?, ?, ?, ?, ?)',
-                [lastName, firstName, email, hashedPassword, '2025']
+                'INSERT INTO etudiants (nom, prenom, email, password, promo, formation_id) VALUES (?, ?, ?, ?, ?, ?)',
+                [lastName, firstName, email, hashedPassword, '2025', formation_id || null]
             );
         }
 
@@ -126,7 +142,8 @@ app.post('/api/auth/login', async (req, res) => {
                 email: user.email,
                 full_name: `${user.nom} ${user.prenom || ''}`.trim(),
                 role: role,
-                department_id: user.dept_id || null
+                department_id: user.dept_id || null,
+                formation_id: user.formation_id || null
             }
         });
     } catch (error) {
@@ -255,11 +272,19 @@ app.post('/api/modules/add', authenticateToken, async (req, res) => {
     try {
         if (req.user.role !== 'chef_departement') return res.status(403).json({ error: "Non autorisé" });
 
-        const { nom, credits, formation_id, pre_req_id } = req.body;
-        await db.execute('INSERT INTO modules (nom, credits, formation_id, pre_req_id) VALUES (?, ?, ?, ?)',
+        const { nom, credits, formation_id, duration, pre_req_id } = req.body;
+
+        // 1. Créer le module
+        const [modRes] = await db.execute('INSERT INTO modules (nom, credits, formation_id, pre_req_id) VALUES (?, ?, ?, ?)',
             [nom, credits, formation_id, pre_req_id]);
 
-        res.json({ message: "Module ajouté" });
+        const moduleId = modRes.insertId;
+
+        // 2. Créer l'examen associé automatiquement pour qu'il soit pioché par l'algorithme
+        await db.execute('INSERT INTO examens (module_id, prof_id, duree_minutes, is_validated) VALUES (?, ?, ?, FALSE)',
+            [moduleId, req.user.id, duration || 120]);
+
+        res.json({ message: "Module et Examen créés avec succès" });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "Erreur ajout module" });
@@ -420,15 +445,17 @@ app.post('/api/schedule/generate', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: "Accès refusé" });
         }
 
+        let deptId = req.body.deptId;
+        let formationId = req.body.formationId;
         let startDate = req.body.startDate;
         let endDate = req.body.endDate;
 
-        console.log(`[API /schedule/generate] Received dates: Start=${startDate}, End=${endDate}`);
+        console.log(`[API /schedule/generate] Params: Dept=${deptId}, Form=${formationId}, Start=${startDate}, End=${endDate}`);
 
         // Si c'est un chef de département, on force son département
         if (req.user.role === 'chef_departement') {
             const [prof] = await db.execute('SELECT dept_id FROM professeurs WHERE id = ?', [req.user.id]);
-            if (prof.length) deptId = prof[0].dept_id;
+            if (prof.length > 0) deptId = prof[0].dept_id;
         }
 
         const result = await generateTimetable({ deptId, formationId, startDate, endDate });

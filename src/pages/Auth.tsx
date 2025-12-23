@@ -40,6 +40,7 @@ const Auth = () => {
     const [formationId, setFormationId] = useState<string>("");
     const [newDeptName, setNewDeptName] = useState("");
     const [newDeptCode, setNewDeptCode] = useState("");
+    const [niveau, setNiveau] = useState<string>("L1");
 
     useEffect(() => {
         // Fetch departments for signup
@@ -125,6 +126,7 @@ const Auth = () => {
                 role,
                 department_id: departmentId === 'other' ? null : parseInt(departmentId),
                 formation_id: formationId ? parseInt(formationId) : null,
+                niveau: role === 'etudiant' ? niveau : null,
                 new_department_name: departmentId === 'other' ? newDeptName : null,
                 new_department_code: departmentId === 'other' ? newDeptCode : null
             });
@@ -247,23 +249,43 @@ const Auth = () => {
                                 </div>
 
                                 {role === 'etudiant' && departmentId && departmentId !== 'other' && (
-                                    <div className="space-y-2 animate-in slide-in-from-top-2">
-                                        <Label htmlFor="formation">Filière / Formation</Label>
-                                        <Select
-                                            onValueChange={(value) => setFormationId(value)}
-                                            value={formationId}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choisir votre filière..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {formations.map((f) => (
-                                                    <SelectItem key={f.id} value={f.id.toString()}>
-                                                        {f.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="formation">Filière / Formation</Label>
+                                            <Select
+                                                onValueChange={(value) => setFormationId(value)}
+                                                value={formationId}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choisir..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {formations.map((f) => (
+                                                        <SelectItem key={f.id} value={f.id.toString()}>
+                                                            {f.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="niveau">Niveau</Label>
+                                            <Select
+                                                onValueChange={(value) => setNiveau(value)}
+                                                value={niveau}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Niveau" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="L1">Licence 1 (L1)</SelectItem>
+                                                    <SelectItem value="L2">Licence 2 (L2)</SelectItem>
+                                                    <SelectItem value="L3">Licence 3 (L3)</SelectItem>
+                                                    <SelectItem value="M1">Master 1 (M1)</SelectItem>
+                                                    <SelectItem value="M2">Master 2 (M2)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                 )}
 

@@ -59,8 +59,8 @@ app.get('/api/public/formations', async (req, res) => {
 // SIGNUP
 app.post('/api/auth/signup', async (req, res) => {
     try {
-        const { email, password, full_name, role, department_id, formation_id, new_department_name } = req.body;
-        console.log(`[Signup] Attempt for ${email} as ${role} (Formation: ${formation_id})`);
+        const { email, password, full_name, role, department_id, formation_id, niveau, new_department_name } = req.body;
+        console.log(`[Signup] Attempt for ${email} as ${role} (Formation: ${formation_id}, Niveau: ${niveau})`);
 
         // Check if email exists
         const [existingAdmins] = await db.execute('SELECT id FROM admins WHERE email = ?', [email]);
@@ -98,8 +98,8 @@ app.post('/api/auth/signup', async (req, res) => {
         }
         else {
             await db.execute(
-                'INSERT INTO etudiants (nom, prenom, email, password, promo, formation_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [lastName, firstName, email, hashedPassword, '2025', formation_id || null]
+                'INSERT INTO etudiants (nom, prenom, email, password, promo, niveau, formation_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [lastName, firstName, email, hashedPassword, '2025', niveau || 'L1', formation_id || null]
             );
         }
 
@@ -147,7 +147,8 @@ app.post('/api/auth/login', async (req, res) => {
                 full_name: `${user.nom} ${user.prenom || ''}`.trim(),
                 role: role,
                 department_id: user.dept_id || null,
-                formation_id: user.formation_id || null
+                formation_id: user.formation_id || null,
+                niveau: user.niveau || null
             }
         });
     } catch (error) {

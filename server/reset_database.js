@@ -55,6 +55,7 @@ async function resetAndSeed() {
                 prenom VARCHAR(100) NOT NULL,
                 formation_id INT,
                 promo VARCHAR(20),
+                niveau VARCHAR(10),
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 FOREIGN KEY (formation_id) REFERENCES formations(id) ON DELETE SET NULL

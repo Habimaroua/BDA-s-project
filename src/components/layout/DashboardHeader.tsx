@@ -48,7 +48,14 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
     // Sync theme on mount
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setIsDark(true);
+    } else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      setIsDark(false);
+    } else if (prefersDark) {
       document.documentElement.classList.add('dark');
       setIsDark(true);
     }
@@ -56,6 +63,13 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      const enabled = localStorage.getItem('notifications_enabled') !== 'false';
+      if (!enabled) {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
+
       try {
         const data = await api.get('/notifications');
         if (Array.isArray(data)) {
@@ -68,6 +82,7 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
       } catch (error) {
         console.error("Erreur notifications:", error);
         setNotifications([]);
+        setUnreadCount(0);
       }
     };
 
@@ -163,12 +178,21 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
                         {!n.is_read && <span className="w-1.5 h-1.5 bg-accent rounded-full" />}
                       </div>
                       <p className="text-[11px] text-muted-foreground line-clamp-2">{n.message}</p>
-                      <span className="text-[9px] text-slate-400 mt-1 italic">
-                        {new Date(n.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <div className="flex justify-between w-full mt-1">
+                        <span className="text-[9px] text-slate-400 italic">
+                          {new Date(n.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="text-[9px] font-medium text-accent uppercase tracking-wider">{n.type}</span>
+                      </div>
                     </DropdownMenuItem>
                   ))
                 )}
+              </div>
+              <DropdownMenuSeparator />
+              <div className="p-2 bg-secondary/30">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer justify-center text-xs text-muted-foreground hover:text-accent">
+                  Gérer toutes mes préférences
+                </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

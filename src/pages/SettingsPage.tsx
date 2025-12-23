@@ -17,11 +17,27 @@ interface SettingsPageProps {
 
 const SettingsPage = ({ role }: SettingsPageProps) => {
     const { user } = useAuth();
-    const [notifications, setNotifications] = useState(true);
-    const [darkMode, setDarkMode] = useState(false);
+    const [notifications, setNotifications] = useState(() => {
+        return localStorage.getItem('notifications_enabled') !== 'false';
+    });
+    const [darkMode, setDarkMode] = useState(() => {
+        return document.documentElement.classList.contains('dark');
+    });
     const [email, setEmail] = useState(user?.email || '');
 
+    const handleToggleDark = (checked: boolean) => {
+        setDarkMode(checked);
+        if (checked) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    };
+
     const handleSave = () => {
+        localStorage.setItem('notifications_enabled', notifications.toString());
         toast.success("Paramètres enregistrés avec succès !");
     };
 
@@ -61,7 +77,7 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                     <Card className="shadow-card">
                         <CardHeader>
                             <CardTitle>Préférences</CardTitle>
-                            <CardDescription>Personnalisez l'interface.</CardDescription>
+                            <CardDescription>Personmalisez l'interface.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -78,10 +94,10 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                                 <div className="space-y-0.5">
                                     <Label className="text-base">Mode Sombre</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Activer le thème sombre (Bientôt disponible).
+                                        Activer le thème sombre pour une meilleure expérience visuelle.
                                     </p>
                                 </div>
-                                <Switch checked={darkMode} onCheckedChange={setDarkMode} disabled />
+                                <Switch checked={darkMode} onCheckedChange={handleToggleDark} />
                             </div>
                         </CardContent>
                     </Card>

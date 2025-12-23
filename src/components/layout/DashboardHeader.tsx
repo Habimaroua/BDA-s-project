@@ -16,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SettingsDialog } from '../dashboard/SettingsDialog';
 import { Moon, Sun, Settings as SettingsIcon, LogOut } from 'lucide-react';
 
 interface DashboardHeaderProps {
@@ -29,7 +28,6 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [showSettings, setShowSettings] = useState(false);
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
 
   const toggleDarkMode = () => {
@@ -218,7 +216,7 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowSettings(true)} className="cursor-pointer">
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>
               </DropdownMenuItem>
@@ -235,8 +233,6 @@ export const DashboardHeader = ({ role, onSearch }: DashboardHeaderProps) => {
           </DropdownMenu>
         </div>
       </div>
-
-      <SettingsDialog open={showSettings} onOpenChange={setShowSettings} />
     </header>
   );
 };

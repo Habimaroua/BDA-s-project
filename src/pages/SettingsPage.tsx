@@ -69,7 +69,7 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                             </div>
                             <div className="space-y-2">
                                 <Label>Email</Label>
-                                <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+                                <Input value={email} disabled />
                             </div>
                         </CardContent>
                     </Card>
@@ -77,7 +77,7 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                     <Card className="shadow-card">
                         <CardHeader>
                             <CardTitle>Préférences</CardTitle>
-                            <CardDescription>Personmalisez l'interface.</CardDescription>
+                            <CardDescription>Personnalisez l'interface.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -87,7 +87,14 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                                         Recevoir des alertes pour les conflits et validations.
                                     </p>
                                 </div>
-                                <Switch checked={notifications} onCheckedChange={setNotifications} />
+                                <Switch
+                                    checked={notifications}
+                                    onCheckedChange={(checked) => {
+                                        setNotifications(checked);
+                                        localStorage.setItem('notifications_enabled', checked.toString());
+                                        toast.success(checked ? "Notifications activées" : "Notifications désactivées");
+                                    }}
+                                />
                             </div>
                             <Separator />
                             <div className="flex items-center justify-between">
@@ -101,11 +108,6 @@ const SettingsPage = ({ role }: SettingsPageProps) => {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <div className="flex justify-end gap-2">
-                        <Button variant="outline">Annuler</Button>
-                        <Button onClick={handleSave}>Enregistrer</Button>
-                    </div>
                 </div>
             </main>
         </div>

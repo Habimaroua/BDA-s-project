@@ -32,13 +32,10 @@ const menuItems = {
     { icon: LayoutDashboard, label: 'Tableau de Bord', path: '/dashboard' },
     { icon: Calendar, label: 'Générer EDT', path: '/schedule' },
     { icon: AlertTriangle, label: 'Conflits', path: '/conflicts' },
-    { icon: Building2, label: 'Salles', path: '/rooms' },
-    { icon: Users, label: 'Surveillances', path: '/supervision' },
   ],
   'chef_departement': [
     { icon: LayoutDashboard, label: 'Département', path: '/dashboard' },
     { icon: Calendar, label: 'Emplois du Temps', path: '/schedule' },
-    { icon: AlertTriangle, label: 'Conflits', path: '/conflicts' },
     { icon: BookOpen, label: 'Formations', path: '/formations' },
   ],
   'etudiant': [

@@ -6,6 +6,7 @@ interface User {
     email: string;
     full_name: string;
     role: UserRole;
+    department_name?: string;
 }
 
 interface AuthContextType {

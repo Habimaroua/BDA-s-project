@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import { AuthProvider } from "./components/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
+import SettingsPage from "./pages/SettingsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -23,15 +25,17 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/formations" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/my-exams" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/my-supervision" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/schedule" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/conflicts" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/departments" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/rooms" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/supervision" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

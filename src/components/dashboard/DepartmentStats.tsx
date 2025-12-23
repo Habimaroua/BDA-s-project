@@ -1,15 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { departments } from '@/data/mockData';
+import { departments as mockDepts } from '@/data/mockData';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
 
 export const DepartmentStats = () => {
-  // Mock stats per department
-  const deptStats = departments.map((dept, index) => ({
-    ...dept,
-    examCount: Math.floor(Math.random() * 100) + 50,
-    conflictRate: Math.random() * 5,
-    roomUsage: 60 + Math.random() * 35,
-  }));
+  const [deptStats, setDeptStats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDeptStats = async () => {
+      try {
+        const data = await api.get('/stats/departments');
+        if (Array.isArray(data)) {
+          setDeptStats(data);
+        } else {
+          console.error("Dept stats invalid:", data);
+          setDeptStats([]);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDeptStats();
+  }, []);
+
+  if (loading) return null;
 
   return (
     <Card className="shadow-card animate-scale-in" style={{ animationDelay: '0.3s' }}>
@@ -19,8 +37,8 @@ export const DepartmentStats = () => {
       <CardContent>
         <div className="space-y-6">
           {deptStats.map((dept, index) => (
-            <div 
-              key={dept.id} 
+            <div
+              key={dept.id}
               className="animate-slide-up"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
@@ -35,7 +53,7 @@ export const DepartmentStats = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">{dept.roomUsage.toFixed(1)}%</p>
+                  <p className="text-sm font-medium text-foreground">{(dept.roomUsage ?? 0).toFixed(1)}%</p>
                   <p className="text-xs text-muted-foreground">Occupation salles</p>
                 </div>
               </div>

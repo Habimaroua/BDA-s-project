@@ -10,11 +10,11 @@ console.log("DB_PORT:", process.env.DB_PORT);
 console.log("----------------------------");
 
 const pool = mysql.createPool({
-    host: 'mysql-20957e76-habimaroua-a255.e.aivencloud.com',
+    host: process.env.DB_HOST || 'mysql-20957e76-habimaroua-a255.e.aivencloud.com',
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: 26878,
+    port: process.env.DB_PORT || 26878,
     ssl: {
         rejectUnauthorized: false
     },

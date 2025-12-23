@@ -11,6 +11,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.send('Serveur UniSchedule (BDA) opérationnel ! Les APIs sont sous /api');
+});
+
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 // AUTH MIDDLEWARE
